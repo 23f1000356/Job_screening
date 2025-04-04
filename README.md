@@ -7,7 +7,7 @@ An intelligent recruitment assistant that automates resume screening, candidate 
 - **JD Summarization**: Automatically extracts key elements from job descriptions
 - **CV-JD Matching**: Uses AI to match candidate resumes with job descriptions
 - **Candidate Shortlisting**: Automatically shortlists candidates based on match scores
-- **Interview Scheduling**: Sends interview invitations to shortlisted candidates
+- **Interview Scheduling**: Sends interview invitations to shortlisted candidates  
 - **Bulk Resume Processing**: Upload and process multiple resumes at once
 - **Dashboard Analytics**: Visualize recruitment metrics with interactive charts
 
