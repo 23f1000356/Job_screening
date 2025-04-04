@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Results - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link active">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Upload Results</h3>
+                    <div>
+                        <a href="{{ url_for('upload_resume') }}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-file-upload me-2"></i>Upload Another Resume
+                        </a>
+                        <a href="{{ url_for('candidates') }}" class="btn btn-primary">
+                            <i class="fas fa-users me-2"></i>View All Candidates
+                        </a>
+                    </div>
+                </div>
+                
+                {% if match_results %}
+                <!-- Single Resume Result -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Resume Match Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="p-4 bg-light rounded">
+                                    <div class="text-center mb-3">
+                                        <img src="https://ui-avatars.com/api/?name={{ match_results.name }}&background=6f42c1&color=fff&size=128" alt="Candidate" class="rounded-circle" width="80">
+                                        <h5 class="mt-3">{{ match_results.name }}</h5>
+                                        <p class="text-muted">{{ match_results.job_title }}</p>
+                                    </div>
+                                    
+                                    <div class="text-center mb-4">
+                                        {% if match_results.is_shortlisted %}
+                                        <span class="badge bg-success py-2 px-3">Shortlisted</span>
+                                        {% else %}
+                                        <span class="badge bg-danger py-2 px-3">Not Shortlisted</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <a href="{{ url_for('candidate_detail', id=match_results.candidate_id) }}" class="btn btn-primary w-100">
+                                        <i class="fas fa-user me-2"></i>View Candidate Details
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Match Score</h5>
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Overall Match:</span>
+                                        <span class="fw-bold">{{ match_results.match_score }}%</span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 15px;">
+                                        <div class="progress-bar {% if match_results.match_score >= 80 %}bg-success{% elif match_results.match_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ match_results.match_score }}%;" 
+                                             aria-valuenow="{{ match_results.match_score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if match_results.matching_keywords %}
+                                <h5>Matching Keywords</h5>
+                                <div class="mb-3">
+                                    {% for keyword in match_results.matching_keywords %}
+                                    <span class="badge bg-light text-dark border me-2 mb-2 py-2 px-3">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="alert {% if match_results.is_shortlisted %}alert-success{% else %}alert-info{% endif %} mt-3">
+                                    <div class="d-flex">
+                                        <i class="fas {% if match_results.is_shortlisted %}fa-check-circle{% else %}fa-info-circle{% endif %} fa-2x me-3"></i>
+                                        <div>
+                                            {% if match_results.is_shortlisted %}
+                                            <h6>Candidate Has Been Shortlisted</h6>
+                                            <p class="mb-0">An interview invitation has been sent automatically.</p>
+                                            {% else %}
+                                            <h6>Candidate Has Not Been Shortlisted</h6>
+                                            <p class="mb-0">The match score was below the threshold required for automatic shortlisting.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if bulk_results %}
+                <!-- Bulk Results -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Bulk Upload Results: {{ bulk_results.job_title }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3 class="display-4">{{ bulk_results.processed_count }}</h3>
+                                        <p class="text-muted">Total Processed</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3 class="display-4">{{ bulk_results.shortlisted_count }}</h3>
+                                        <p class="text-muted">Shortlisted</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3 class="display-4">{{ ((bulk_results.shortlisted_count / bulk_results.processed_count) * 100)|round(1) if bulk_results.processed_count > 0 else 0 }}%</h3>
+                                        <p class="text-muted">Shortlist Rate</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Candidate Details</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Match Score</th>
+                                        <th>Status</th>
+                                        <th>Keywords Matched</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for candidate in bulk_results.candidates %}
+                                    <tr>
+                                        <td>{{ candidate.name }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                    <div class="progress-bar {% if candidate.match_score >= 80 %}bg-success{% elif candidate.match_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ candidate.match_score }}%;" 
+                                                         aria-valuenow="{{ candidate.match_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <span>{{ candidate.match_score }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if candidate.is_shortlisted %}
+                                            <span class="badge bg-success">Shortlisted</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Not Shortlisted</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if candidate.matching_keywords %}
+                                            <span class="badge bg-light text-dark">{{ candidate.matching_keywords|length }} keywords</span>
+                                            {% else %}
+                                            <span class="text-muted">No keywords matched</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('candidate_detail', id=candidate.candidate_id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if not match_results and not bulk_results %}
+                <div class="alert alert-info text-center py-5">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <h4>No Resume Upload Results</h4>
+                    <p>There are no recent resume upload results to display.</p>
+                    <div class="mt-3">
+                        <a href="{{ url_for('upload_resume') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-file-upload me-2"></i>Upload Single Resume
+                        </a>
+                        <a href="{{ url_for('upload_multiple') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-upload me-2"></i>Bulk Upload
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

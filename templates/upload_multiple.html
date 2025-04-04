@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Upload - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link active">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Bulk Resume Upload</h3>
+                    <a href="{{ url_for('upload_resume') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-upload me-2"></i>Single Upload
+                    </a>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Upload Multiple Resumes</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('upload_multiple') }}" enctype="multipart/form-data">
+                                    <div class="mb-4">
+                                        <label for="job_id" class="form-label">Select Job</label>
+                                        <select class="form-select" id="job_id" name="job_id" required>
+                                            <option value="" selected disabled>-- Select a job --</option>
+                                            {% for job in jobs %}
+                                            <option value="{{ job.id }}" {% if request.args.get('job_id')|int == job.id %}selected{% endif %}>{{ job.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="resumes" class="form-label">Resume Files</label>
+                                        <input class="form-control" type="file" id="resumes" name="resumes" accept=".pdf,.doc,.docx,.txt" multiple required>
+                                        <div class="form-text">Select multiple resume files (PDF, DOC, DOCX, TXT)</div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Note:</strong> Candidate names will be extracted from filenames. For best results, use filenames in the format <code>FirstName_LastName.pdf</code>
+                                    </div>
+                                    
+                                    <div class="d-grid mt-4">
+                                        <button type="submit" class="btn btn-primary py-2">
+                                            <i class="fas fa-upload me-2"></i>Upload & Process
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-5">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Bulk Processing</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-upload text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Upload Multiple Files</h6>
+                                        <p class="text-muted small">Upload up to 20 resumes at once for batch processing.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-robot text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Automated Processing</h6>
+                                        <p class="text-muted small">Our AI system automatically processes each resume and calculates match scores.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-chart-bar text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>Results Summary</h6>
+                                        <p class="text-muted small">Get a summary of results with match scores and shortlisting status for all candidates.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Tips for Better Matching</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Use clear, descriptive filenames
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Ensure resumes are in text-searchable format
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Keep files under 5MB each
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        PDF is the preferred format for best results
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

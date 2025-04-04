@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+
+{% block title %}Interviews - Job Screening App{% endblock %}
+
+{% block extra_css %}
+<!-- Add FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+<style>
+    #interview-calendar {
+        height: 600px;
+        margin: 20px 0;
+    }
+    .fc-event {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link active">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Interviews</h3>
+                    <div>
+                        <a href="{{ url_for('candidates') }}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-users me-2"></i>View Candidates
+                        </a>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#calendarSyncModal">
+                            <i class="fas fa-sync me-2"></i>Sync Calendar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Total Interviews</h6>
+                                        <h3 class="mb-0">{{ interviews|length }}</h3>
+                                    </div>
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                                        <i class="fas fa-calendar-alt text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Upcoming</h6>
+                                        <h3 class="mb-0">{{ upcoming_count }}</h3>
+                                    </div>
+                                    <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                                        <i class="fas fa-calendar-day text-info"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Completed</h6>
+                                        <h3 class="mb-0">{{ completed_count }}</h3>
+                                    </div>
+                                    <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-muted mb-1">Today</h6>
+                                        <h3 class="mb-0">{{ today_count }}</h3>
+                                    </div>
+                                    <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                                        <i class="fas fa-calendar-check text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" id="search-input" class="form-control border-start-0" placeholder="Search candidates...">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <select id="job-filter" class="form-select">
+                                    <option value="">All Jobs</option>
+                                    {% for job in jobs %}
+                                    <option value="{{ job.id }}">{{ job.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <select id="status-filter" class="form-select">
+                                    <option value="">All Statuses</option>
+                                    <option value="upcoming">Upcoming</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <select id="view-type" class="form-select">
+                                    <option value="list">List View</option>
+                                    <option value="calendar">Calendar View</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interviews List View -->
+                <div id="list-view" class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="interviews-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Candidate</th>
+                                        <th>Job</th>
+                                        <th>Date & Time</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if interviews %}
+                                    {% for interview in interviews %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://ui-avatars.com/api/?name={{ interview.candidate.name }}&background=6f42c1&color=fff&size=32" alt="Candidate" class="rounded-circle me-2" width="32">
+                                                <div>
+                                                    <div>{{ interview.candidate.name }}</div>
+                                                    <small class="text-muted">{{ interview.candidate.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ interview.candidate.job.title }}</td>
+                                        <td>
+                                            <div>{{ interview.scheduled_date.strftime('%b %d, %Y') }}</div>
+                                            <small class="text-muted">{{ interview.scheduled_date.strftime('%I:%M %p') }}</small>
+                                        </td>
+                                        <td>{{ interview.location }}</td>
+                                        <td>
+                                            {% if interview.status == 'upcoming' %}
+                                            {% if interview.scheduled_date == today %}
+                                            <span class="badge bg-warning">Today</span>
+                                            {% else %}
+                                            <span class="badge bg-info">Upcoming</span>
+                                            {% endif %}
+                                            {% elif interview.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                            {% elif interview.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('candidate_detail', id=interview.candidate.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if interview.status == 'upcoming' %}
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="markCompleted({{ interview.id }})">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelInterview({{ interview.id }})">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ interview.id }}">
+                                                    <i class="fas fa-comment-alt"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Feedback Modal -->
+                                            <div class="modal fade" id="feedbackModal{{ interview.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Interview Feedback</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form id="feedbackForm{{ interview.id }}" action="{{ url_for('save_interview_feedback', id=interview.id) }}" method="POST">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Candidate</label>
+                                                                    <input type="text" class="form-control" value="{{ interview.candidate.name }}" readonly>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Job Position</label>
+                                                                    <input type="text" class="form-control" value="{{ interview.candidate.job.title }}" readonly>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label for="rating" class="form-label">Overall Rating</label>
+                                                                    <select class="form-select" id="rating" name="rating" required>
+                                                                        <option value="">Select rating</option>
+                                                                        <option value="5"{% if interview.feedback and interview.feedback.rating == 5 %} selected{% endif %}>5 - Excellent</option>
+                                                                        <option value="4"{% if interview.feedback and interview.feedback.rating == 4 %} selected{% endif %}>4 - Very Good</option>
+                                                                        <option value="3"{% if interview.feedback and interview.feedback.rating == 3 %} selected{% endif %}>3 - Good</option>
+                                                                        <option value="2"{% if interview.feedback and interview.feedback.rating == 2 %} selected{% endif %}>2 - Fair</option>
+                                                                        <option value="1"{% if interview.feedback and interview.feedback.rating == 1 %} selected{% endif %}>1 - Poor</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label for="technical_skills" class="form-label">Technical Skills</label>
+                                                                    <textarea class="form-control" id="technical_skills" name="technical_skills" rows="3">{% if interview.feedback %}{{ interview.feedback.technical_skills }}{% endif %}</textarea>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label for="communication_skills" class="form-label">Communication Skills</label>
+                                                                    <textarea class="form-control" id="communication_skills" name="communication_skills" rows="3">{% if interview.feedback %}{{ interview.feedback.communication_skills }}{% endif %}</textarea>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label for="notes" class="form-label">Additional Notes</label>
+                                                                    <textarea class="form-control" id="notes" name="notes" rows="3">{% if interview.feedback %}{{ interview.feedback.notes }}{% endif %}</textarea>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label for="hiring_decision" class="form-label">Hiring Decision</label>
+                                                                    <select class="form-select" id="hiring_decision" name="hiring_decision" required>
+                                                                        <option value="">Select decision</option>
+                                                                        <option value="hire"{% if interview.feedback and interview.feedback.hiring_decision == 'hire' %} selected{% endif %}>Hire</option>
+                                                                        <option value="reject"{% if interview.feedback and interview.feedback.hiring_decision == 'reject' %} selected{% endif %}>Reject</option>
+                                                                        <option value="consider"{% if interview.feedback and interview.feedback.hiring_decision == 'consider' %} selected{% endif %}>Consider Further</option>
+                                                                    </select>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" form="feedbackForm{{ interview.id }}" class="btn btn-primary">Save Feedback</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <div class="py-5">
+                                                <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                                <h5>No interviews scheduled</h5>
+                                                <p class="text-muted">Send interview invitations to candidates to schedule interviews</p>
+                                                <a href="{{ url_for('candidates') }}" class="btn btn-primary mt-2">
+                                                    <i class="fas fa-users me-2"></i>View Candidates
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar View -->
+                <div id="calendar-view" class="card border-0 shadow-sm mb-4" style="display: none;">
+                    <div class="card-body">
+                        <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
+                            <button class="btn btn-sm btn-outline-primary" id="prev-month">&lt; Previous</button>
+                            <h4 id="calendar-title" class="mb-0">Month Year</h4>
+                            <button class="btn btn-sm btn-outline-primary" id="next-month">Next &gt;</button>
+                        </div>
+                        
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Sun</th>
+                                    <th>Mon</th>
+                                    <th>Tue</th>
+                                    <th>Wed</th>
+                                    <th>Thu</th>
+                                    <th>Fri</th>
+                                    <th>Sat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendar-body">
+                                <!-- Calendar will be generated here -->
+                            </tbody>
+                        </table>
+                        
+                        <div id="interview-list-container" class="mt-4">
+                            <h5>Interviews</h5>
+                            <div id="interview-list" class="list-group">
+                                <!-- Interview list will be shown here -->
+                                {% for interview in interviews %}
+                                <div class="list-group-item list-group-item-action mb-2 rounded shadow-sm" 
+                                     data-date="{{ interview.scheduled_date.strftime('%Y-%m-%d') }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-1">{{ interview.candidate.name }}</h6>
+                                        <span class="badge {% if interview.scheduled_date.date() == today %}bg-warning{% else %}bg-primary{% endif %}">
+                                            {{ interview.scheduled_date.strftime('%I:%M %p') }}
+                                        </span>
+                                    </div>
+                                    <p class="mb-1">{{ interview.candidate.job.title }}</p>
+                                    <small>Location: {{ interview.location }}</small>
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('candidate_detail', id=interview.candidate.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Sync Modal -->
+<div class="modal fade" id="calendarSyncModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sync with Calendar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select the calendar service you want to sync your interviews with:</p>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-outline-primary" type="button" id="google-calendar-btn">
+                        <i class="fab fa-google me-2"></i>Google Calendar
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="microsoft-calendar-btn">
+                        <i class="fab fa-microsoft me-2"></i>Microsoft Outlook
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" id="apple-calendar-btn">
+                        <i class="fas fa-calendar-alt me-2"></i>Apple Calendar
+                    </button>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Syncing will add all scheduled interviews to your selected calendar and keep them updated automatically.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add to Calendar Modal -->
+<div class="modal fade" id="addToCalendarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add to Google Calendar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select the interviews you want to add to your Google Calendar:</p>
+                
+                <div class="list-group mt-3">
+                    {% for interview in interviews %}
+                    <div class="list-group-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ interview.id }}" id="interview-{{ interview.id }}">
+                            <label class="form-check-label" for="interview-{{ interview.id }}">
+                                <strong>{{ interview.candidate.name }}</strong> - {{ interview.candidate.job.title }}<br>
+                                <small class="text-muted">{{ interview.scheduled_date.strftime('%A, %b %d, %Y at %I:%M %p') }}</small>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="add-to-google-calendar">Add to Calendar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View switching
+    const viewType = document.getElementById('view-type');
+    const listView = document.getElementById('list-view');
+    const calendarView = document.getElementById('calendar-view');
+    
+    viewType.addEventListener('change', function() {
+        if (this.value === 'list') {
+            listView.style.display = '';
+            calendarView.style.display = 'none';
+        } else {
+            listView.style.display = 'none';
+            calendarView.style.display = '';
+            
+            // Initialize calendar if not already done
+            if (!window.calendarInitialized) {
+                initializeCalendar();
+                window.calendarInitialized = true;
+            }
+        }
+    });
+    
+    // Search and filtering
+    const searchInput = document.getElementById('search-input');
+    const jobFilter = document.getElementById('job-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const table = document.getElementById('interviews-table');
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const jobValue = jobFilter.value;
+        const statusValue = statusFilter.value;
+        
+        rows.forEach(row => {
+            const candidateName = row.cells[0].textContent.toLowerCase();
+            const job = row.cells[1].textContent.toLowerCase();
+            const status = row.cells[4].textContent.trim().toLowerCase();
+            
+            const nameMatch = candidateName.includes(searchTerm);
+            const jobMatch = !jobValue || job.includes(jobValue);
+            const statusMatch = !statusValue || status.includes(statusValue);
+            
+            if (nameMatch && jobMatch && statusMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterTable);
+    jobFilter.addEventListener('change', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    
+    // Calendar variables
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+    
+    // Calendar functions
+    function generateCalendar(month, year) {
+        const calendarBody = document.getElementById('calendar-body');
+        const calendarTitle = document.getElementById('calendar-title');
+        const interviewItems = document.querySelectorAll('#interview-list .list-group-item');
+        
+        // Set the calendar title
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                           "July", "August", "September", "October", "November", "December"];
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+        
+        // Clear any existing calendar
+        calendarBody.innerHTML = '';
+        
+        // Get first day of month and total days in month
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Create calendar rows and cells
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+            // Create table row
+            const row = document.createElement('tr');
+            
+            // Create table cells
+            for (let j = 0; j < 7; j++) {
+                const cell = document.createElement('td');
+                
+                if (i === 0 && j < firstDay) {
+                    // Empty cells before the first day of month
+                    cell.textContent = '';
+                } else if (date > daysInMonth) {
+                    // Empty cells after the last day of month
+                    break;
+                } else {
+                    // Fill in date
+                    cell.textContent = date;
+                    cell.setAttribute('data-date', `${year}-${String(month+1).padStart(2, '0')}-${String(date).padStart(2, '0')}`);
+                    
+                    // Highlight today
+                    const today = new Date();
+                    if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        cell.classList.add('bg-warning', 'text-dark');
+                    }
+                    
+                    // Check for interviews on this day
+                    let hasInterviews = false;
+                    interviewItems.forEach(item => {
+                        const interviewDate = item.getAttribute('data-date');
+                        if (interviewDate === cell.getAttribute('data-date')) {
+                            hasInterviews = true;
+                        }
+                    });
+                    
+                    if (hasInterviews) {
+                        cell.classList.add('bg-primary', 'text-white');
+                        cell.style.cursor = 'pointer';
+                        cell.addEventListener('click', function() {
+                            showInterviewsForDate(cell.getAttribute('data-date'));
+                        });
+                    }
+                    
+                    date++;
+                }
+                
+                row.appendChild(cell);
+            }
+            
+            calendarBody.appendChild(row);
+            
+            if (date > daysInMonth) {
+                break;
+            }
+        }
+        
+        // Initially hide all interviews
+        interviewItems.forEach(item => {
+            item.style.display = 'none';
+        });
+    }
+    
+    function showInterviewsForDate(dateString) {
+        const interviewItems = document.querySelectorAll('#interview-list .list-group-item');
+        
+        interviewItems.forEach(item => {
+            if (item.getAttribute('data-date') === dateString) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('interview-list-container').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Initialize calendar
+    function initializeCalendar() {
+        generateCalendar(currentMonth, currentYear);
+        
+        // Add event listeners for navigation
+        document.getElementById('prev-month').addEventListener('click', function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+        
+        document.getElementById('next-month').addEventListener('click', function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+        
+        // Show today's interviews by default
+        const today = new Date();
+        const todayString = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        showInterviewsForDate(todayString);
+    }
+    
+    // Interview management functions
+    window.markCompleted = function(interviewId) {
+        if (confirm('Mark this interview as completed?')) {
+            // In a real app, this would be an AJAX call to update the status
+            alert('Interview marked as completed. This would update the database in a real application.');
+        }
+    };
+    
+    window.cancelInterview = function(interviewId) {
+        if (confirm('Are you sure you want to cancel this interview?')) {
+            // In a real app, this would be an AJAX call to update the status
+            alert('Interview cancelled. This would update the database in a real application.');
+        }
+    };
+    
+    // Google Calendar Integration
+    document.getElementById('google-calendar-btn').addEventListener('click', function() {
+        $('#calendarSyncModal').modal('hide');
+        $('#addToCalendarModal').modal('show');
+    });
+    
+    document.getElementById('add-to-google-calendar').addEventListener('click', function() {
+        const selectedInterviews = Array.from(document.querySelectorAll('#addToCalendarModal input[type="checkbox"]:checked')).map(checkbox => {
+            return checkbox.value;
+        });
+        
+        if (selectedInterviews.length === 0) {
+            alert('Please select at least one interview to add to your calendar.');
+            return;
+        }
+        
+        // For each selected interview, create a Google Calendar event URL
+        selectedInterviews.forEach(interviewId => {
+            const interviewElement = document.getElementById(`interview-${interviewId}`);
+            const interviewDetails = interviewElement.nextElementSibling.textContent;
+            const interviewInfo = interviewDetails.split('-');
+            
+            const candidateName = interviewInfo[0].trim();
+            const jobTitle = interviewInfo[1].split('\n')[0].trim();
+            const dateTimeStr = interviewInfo[1].split('\n')[1].trim();
+            
+            // Create Google Calendar event URL
+            const title = `Interview with ${candidateName} for ${jobTitle}`;
+            const dateTimeComponents = dateTimeStr.match(/(\w+), (\w+) (\d+), (\d+) at (\d+):(\d+) (\w+)/);
+            
+            if (dateTimeComponents) {
+                const month = new Date(`${dateTimeComponents[2]} 1, 2000`).getMonth() + 1;
+                const day = dateTimeComponents[3];
+                const year = dateTimeComponents[4];
+                let hour = parseInt(dateTimeComponents[5]);
+                const minute = dateTimeComponents[6];
+                const ampm = dateTimeComponents[7];
+                
+                // Convert to 24-hour format
+                if (ampm.toLowerCase() === 'pm' && hour < 12) {
+                    hour += 12;
+                } else if (ampm.toLowerCase() === 'am' && hour === 12) {
+                    hour = 0;
+                }
+                
+                // Format dates for Google Calendar
+                const startDate = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}${String(minute).padStart(2, '0')}00`;
+                const endDate = `${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}T${String(hour+1).padStart(2, '0')}${String(minute).padStart(2, '0')}00`;
+                
+                // Create Google Calendar URL
+                const location = 'Interview Location';
+                const details = 'Job interview scheduled through the Job Screening App.';
+                
+                const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}&sf=true&output=xml`;
+                
+                // Open Google Calendar in a new tab
+                window.open(googleCalendarUrl, '_blank');
+            }
+        });
+        
+        $('#addToCalendarModal').modal('hide');
+        
+        // Show success message
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                Interviews added to Google Calendar successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        document.querySelector('.container').insertAdjacentHTML('afterbegin', alertHtml);
+    });
+    
+    // Microsoft Outlook Integration (similar to Google Calendar)
+    document.getElementById('microsoft-calendar-btn').addEventListener('click', function() {
+        alert('Microsoft Outlook integration would be implemented similarly to Google Calendar.');
+    });
+    
+    // Apple Calendar Integration (similar to Google Calendar)
+    document.getElementById('apple-calendar-btn').addEventListener('click', function() {
+        alert('Apple Calendar integration would be implemented similarly to Google Calendar.');
+    });
+});
+</script>
+{% endblock %} 

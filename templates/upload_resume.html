@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Resume - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link active">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Upload Resume</h3>
+                    <a href="{{ url_for('upload_multiple') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload me-2"></i>Bulk Upload
+                    </a>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Upload Resume & Check Match</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('upload_resume') }}" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="job_id" class="form-label">Select Job</label>
+                                        <select class="form-select" id="job_id" name="job_id" required>
+                                            <option value="" selected disabled>-- Select a job --</option>
+                                            {% for job in jobs %}
+                                            <option value="{{ job.id }}" {% if request.args.get('job_id')|int == job.id %}selected{% endif %}>{{ job.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Candidate Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Candidate Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="resume" class="form-label">Resume File</label>
+                                        <input class="form-control" type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt" required>
+                                        <div class="form-text">Accepted formats: PDF, DOC, DOCX, TXT</div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary py-2">
+                                            <i class="fas fa-check-circle me-2"></i>Upload & Check Match
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-5">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">How it Works</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-file-upload text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>1. Upload Resume</h6>
+                                        <p class="text-muted small">Select a job and upload a candidate's resume.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-cogs text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>2. AI Analysis</h6>
+                                        <p class="text-muted small">Our AI system analyzes the resume and compares it against the job description.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-percentage text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>3. Match Score</h6>
+                                        <p class="text-muted small">A match score is calculated based on the relevance of the candidate's qualifications.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex">
+                                    <div class="bg-light rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user-check text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6>4. Shortlisting</h6>
+                                        <p class="text-muted small">Candidates with high match scores are automatically shortlisted and interview invitations are sent.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

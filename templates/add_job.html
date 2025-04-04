@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Add Job - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link active">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <a href="{{ url_for('jobs') }}" class="text-decoration-none text-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Jobs
+                        </a>
+                        <h3 class="mt-2">Add New Job</h3>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Job Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('add_job') }}">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Job Title</label>
+                                        <input type="text" class="form-control" id="title" name="title" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Job Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
+                                        <div class="form-text">Include details about the position, responsibilities, and qualifications.</div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="requirements" class="form-label">Job Requirements</label>
+                                        <textarea class="form-control" id="requirements" name="requirements" rows="5"></textarea>
+                                        <div class="form-text">Optional. List specific skills, certifications, or qualifications required.</div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary py-2">
+                                            <i class="fas fa-plus-circle me-2"></i>Add Job
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Tips for Better Matching</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Important:</strong> The job description and requirements are used by our AI system to match candidate resumes. Be as detailed and specific as possible for better matching results.
+                                </div>
+                                
+                                <ul class="list-group list-group-flush mt-3">
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Include technical skills and keywords
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Specify experience level and qualifications
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        List required certifications or education
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                        Detail job responsibilities clearly
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

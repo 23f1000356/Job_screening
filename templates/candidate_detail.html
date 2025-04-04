@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Details - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link active">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <a href="{{ url_for('candidates') }}" class="text-decoration-none text-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Candidates
+                        </a>
+                        <h3 class="mt-2">Candidate Details</h3>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('download_resume', id=candidate.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Download Resume
+                        </a>
+                        {% if candidate.status == 'shortlisted' %}
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sendInterviewModal">
+                            <i class="fas fa-paper-plane me-2"></i>Send Interview Invitation
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Profile & Details -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body text-center">
+                                <img src="https://ui-avatars.com/api/?name={{ candidate.name }}&background=6f42c1&color=fff&size=128" alt="Candidate" class="rounded-circle mb-3" width="100">
+                                <h4>{{ candidate.name }}</h4>
+                                <p class="text-muted mb-3">
+                                    <i class="fas fa-briefcase me-2"></i>{{ candidate.job.title }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-center mb-3">
+                                    {% if candidate.status == 'shortlisted' %}
+                                    <span class="badge bg-success py-2 px-3">Shortlisted</span>
+                                    {% elif candidate.status == 'rejected' %}
+                                    <span class="badge bg-danger py-2 px-3">Rejected</span>
+                                    {% elif candidate.status == 'interview_scheduled' %}
+                                    <span class="badge bg-info py-2 px-3">Interview Scheduled</span>
+                                    {% elif candidate.status == 'interviewed' %}
+                                    <span class="badge bg-primary py-2 px-3">Interviewed</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary py-2 px-3">Processing</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Match Score:</span>
+                                        <span class="fw-bold">{{ candidate.match_score }}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar {% if candidate.match_score >= 80 %}bg-success{% elif candidate.match_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ candidate.match_score }}%;" 
+                                             aria-valuenow="{{ candidate.match_score }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="text-start">
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Contact Information</h6>
+                                        <p class="mb-2">
+                                            <i class="fas fa-envelope me-2 text-primary"></i>{{ candidate.email }}
+                                        </p>
+                                        {% if candidate.phone %}
+                                        <p class="mb-0">
+                                            <i class="fas fa-phone me-2 text-primary"></i>{{ candidate.phone }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Resume Details</h6>
+                                        <p class="mb-2">
+                                            <i class="fas fa-calendar me-2 text-primary"></i>Uploaded: {{ candidate.created_at.strftime('%b %d, %Y') }}
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="fas fa-file me-2 text-primary"></i>File Type: {{ candidate.resume_path.split('.')[-1].upper() }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if candidate.status == 'interview_scheduled' or candidate.status == 'interviewed' %}
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Interview Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-day me-2 text-primary"></i>
+                                    <strong>Date:</strong> {{ interview.date.strftime('%B %d, %Y') }}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-clock me-2 text-primary"></i>
+                                    <strong>Time:</strong> {{ interview.time.strftime('%I:%M %p') }}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                    <strong>Location:</strong> {{ interview.location }}
+                                </p>
+                                {% if interview.notes %}
+                                <p class="mb-2">
+                                    <i class="fas fa-comment-alt me-2 text-primary"></i>
+                                    <strong>Notes:</strong> {{ interview.notes }}
+                                </p>
+                                {% endif %}
+                                
+                                {% if candidate.status == 'interview_scheduled' %}
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Interview invitation was sent on {{ interview.created_at.strftime('%b %d, %Y') }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Match Analysis -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Match Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Skills Match</h6>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Score:</span>
+                                                    <span class="fw-bold">{{ skill_match_score }}%</span>
+                                                </div>
+                                                <div class="progress mb-3" style="height: 8px;">
+                                                    <div class="progress-bar bg-info" 
+                                                         role="progressbar" 
+                                                         style="width: {{ skill_match_score }}%;" 
+                                                         aria-valuenow="{{ skill_match_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <p class="card-text text-muted">
+                                                    Measures how well the candidate's skills match the job requirements.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Experience Match</h6>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Score:</span>
+                                                    <span class="fw-bold">{{ experience_match_score }}%</span>
+                                                </div>
+                                                <div class="progress mb-3" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" 
+                                                         role="progressbar" 
+                                                         style="width: {{ experience_match_score }}%;" 
+                                                         aria-valuenow="{{ experience_match_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <p class="card-text text-muted">
+                                                    Evaluates if the candidate has relevant experience for this role.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Education Match</h6>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Score:</span>
+                                                    <span class="fw-bold">{{ education_match_score }}%</span>
+                                                </div>
+                                                <div class="progress mb-3" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" 
+                                                         role="progressbar" 
+                                                         style="width: {{ education_match_score }}%;" 
+                                                         aria-valuenow="{{ education_match_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <p class="card-text text-muted">
+                                                    Assesses educational background against job requirements.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">Overall Match</h6>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span>Score:</span>
+                                                    <span class="fw-bold">{{ candidate.match_score }}%</span>
+                                                </div>
+                                                <div class="progress mb-3" style="height: 8px;">
+                                                    <div class="progress-bar {% if candidate.match_score >= 80 %}bg-success{% elif candidate.match_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ candidate.match_score }}%;" 
+                                                         aria-valuenow="{{ candidate.match_score }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <p class="card-text text-muted">
+                                                    Combined score based on skills, experience, and education.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mt-2">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Key Skills Detected</h6>
+                                        <div class="mt-3">
+                                            {% for skill in skills %}
+                                            <span class="badge bg-light text-dark border me-2 mb-2 py-2 px-3">{{ skill }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Resume Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="bg-light p-3 rounded mb-4">
+                                    <h6 class="mb-3">Content Extracted from Resume</h6>
+                                    <p>{{ resume_text }}</p>
+                                </div>
+                                
+                                <div class="alert alert-primary">
+                                    <div class="d-flex">
+                                        <i class="fas fa-robot fa-2x me-3"></i>
+                                        <div>
+                                            <h6 class="mb-1">AI Analysis</h6>
+                                            <p class="mb-0">{{ ai_analysis }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h6 class="mb-3">Job Requirements (for reference)</h6>
+                                    <p class="mb-0">{{ candidate.job.requirements }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview Invitation Modal -->
+<div class="modal fade" id="sendInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Interview Invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="interviewForm" action="{{ url_for('send_interview_invitation', id=candidate.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Candidate</label>
+                        <input type="text" class="form-control" value="{{ candidate.name }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Job Position</label>
+                        <input type="text" class="form-control" value="{{ candidate.job.title }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="interview_date" class="form-label">Interview Date</label>
+                        <input type="date" class="form-control" id="interview_date" name="interview_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="interview_time" class="form-label">Interview Time</label>
+                        <input type="time" class="form-control" id="interview_time" name="interview_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="interview_location" class="form-label">Location/Link</label>
+                        <input type="text" class="form-control" id="interview_location" name="interview_location" placeholder="Office address or video call link" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="additional_notes" class="form-label">Additional Notes</label>
+                        <textarea class="form-control" id="additional_notes" name="additional_notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="interviewForm" class="btn btn-primary">Send Invitation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

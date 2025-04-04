@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link active">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Settings</h3>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Match Score Threshold Setting -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Match Score Threshold</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="thresholdForm">
+                                    <div class="mb-3">
+                                        <label for="threshold" class="form-label">Shortlisting Threshold (%)</label>
+                                        <div class="d-flex align-items-center">
+                                            <input type="range" class="form-range me-3" id="threshold" min="0" max="100" step="5" value="70">
+                                            <span class="badge bg-primary px-3 py-2" id="thresholdValue">70%</span>
+                                        </div>
+                                        <div class="form-text">
+                                            Candidates with match scores above this threshold will be automatically shortlisted.
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Threshold
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Email Settings -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Email Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="emailSettingsForm">
+                                    <div class="mb-3">
+                                        <label for="emailTemplate" class="form-label">Interview Invitation Template</label>
+                                        <textarea class="form-control" id="emailTemplate" rows="6">Dear {candidate_name},
+
+We are pleased to inform you that your resume has been shortlisted for the position of {job_title}.
+
+You are invited for an interview on {interview_date} at {interview_time}.
+{interview_location}
+{meeting_link}
+
+Please confirm your attendance by replying to this email.
+
+Best regards,
+The Hiring Team</textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="sendAutomatic" checked>
+                                        <label class="form-check-label" for="sendAutomatic">Send interview invitations automatically</label>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Email Settings
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Settings -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Account Settings</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="accountSettingsForm">
+                                    <div class="mb-3">
+                                        <label for="currentPassword" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" id="currentPassword">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="newPassword" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="newPassword">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirmPassword">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-key me-2"></i>Change Password
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <!-- System Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">System Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span>App Version</span>
+                                        <span class="badge bg-secondary">1.0.0</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span>Database</span>
+                                        <span class="badge bg-secondary">SQLite</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span>ML Model</span>
+                                        <span class="badge bg-success">Active</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Help & Support -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Help & Support</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="#" class="btn btn-outline-primary">
+                                        <i class="fas fa-book me-2"></i>View Documentation
+                                    </a>
+                                    <a href="#" class="btn btn-outline-primary">
+                                        <i class="fas fa-question-circle me-2"></i>Get Support
+                                    </a>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="text-center mt-3">
+                                    <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Threshold slider
+        const thresholdSlider = document.getElementById('threshold');
+        const thresholdValue = document.getElementById('thresholdValue');
+        
+        thresholdSlider.addEventListener('input', function() {
+            thresholdValue.textContent = thresholdSlider.value + '%';
+        });
+        
+        // Threshold form submission
+        const thresholdForm = document.getElementById('thresholdForm');
+        
+        thresholdForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const threshold = thresholdSlider.value / 100; // Convert to decimal
+            
+            // Make API call to update threshold
+            fetch('/api/update_match_threshold', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ threshold: threshold })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Threshold updated successfully!');
+                } else {
+                    alert('Error updating threshold: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the threshold.');
+            });
+        });
+        
+        // Email settings form
+        const emailForm = document.getElementById('emailSettingsForm');
+        
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Email settings saved successfully!');
+        });
+        
+        // Account settings form
+        const accountForm = document.getElementById('accountSettingsForm');
+        
+        accountForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all password fields.');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match.');
+                return;
+            }
+            
+            alert('Password changed successfully!');
+            
+            // Reset form
+            accountForm.reset();
+        });
+    });
+</script>
+{% endblock %} 

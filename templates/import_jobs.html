@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Import Jobs - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link active">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Import Jobs</h3>
+                    <a href="{{ url_for('add_job') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Add Job Manually
+                    </a>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Upload Job Descriptions from CSV</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('import_jobs') }}" enctype="multipart/form-data">
+                                    <div class="mb-4">
+                                        <label for="csv_file" class="form-label">CSV File</label>
+                                        <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                                        <div class="form-text">Upload a CSV file with job descriptions. See format instructions on the right.</div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-info-circle fa-lg me-3"></i>
+                                            <div>
+                                                <strong>Importing Process:</strong>
+                                                <p class="mb-0">Your CSV file will be processed and the job descriptions will be added to the system. You'll be redirected to the jobs page when the import is complete.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary py-2">
+                                            <i class="fas fa-upload me-2"></i>Upload & Process
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Recently Imported Jobs -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Recently Imported Jobs</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Job Title</th>
+                                                <th>Date Imported</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if recent_jobs %}
+                                            {% for job in recent_jobs %}
+                                            <tr>
+                                                <td>{{ job.title }}</td>
+                                                <td>{{ job.created_at.strftime('%b %d, %Y') }}</td>
+                                                <td><span class="badge bg-success">Active</span></td>
+                                                <td>
+                                                    <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i> View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <p class="text-muted mb-0">No jobs have been imported yet</p>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">CSV Format Instructions</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Your CSV file must have the following columns:</p>
+                                
+                                <ul class="list-group mb-4">
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">1</span>
+                                        <strong>title</strong> - Job title/position
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">2</span>
+                                        <strong>description</strong> - Detailed job description
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">3</span>
+                                        <strong>requirements</strong> - Required skills/qualifications (optional)
+                                    </li>
+                                </ul>
+                                
+                                <h6>Example CSV:</h6>
+                                <div class="bg-light p-3 rounded code-example">
+                                    <pre class="mb-0">title,description,requirements
+"Software Engineer","Full-stack developer...","Python, JavaScript"
+"Data Analyst","Analyze and interpret...","SQL, Excel, Statistics"</pre>
+                                </div>
+                                
+                                <div class="d-grid mt-4">
+                                    <a href="{{ url_for('download_template') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-download me-2"></i>Download Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Tips</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Ensure your CSV is properly formatted
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Include detailed job descriptions for better matching
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Specify requirements clearly for improved results
+                                    </li>
+                                    <li class="list-group-item px-0">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        UTF-8 encoding is recommended for special characters
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.code-example {
+    font-family: monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}AI-Powered Job Screening{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold" style="color: var(--primary-color);">AI-Powered Job Screening</h1>
+            <p class="lead mt-3">Streamline your recruitment process with our intelligent screening system that matches job descriptions with candidate resumes.</p>
+            <div class="mt-4">
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6 mt-4 mt-lg-0 text-center">
+            <img src="https://img.freepik.com/free-vector/recruitment-concept-illustration_114360-535.jpg" alt="Recruitment Illustration" class="img-fluid rounded shadow" style="max-width: 100%;">
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4" style="color: var(--primary-color);">Key Features</h2>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-file-alt fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>JD Summarization</h4>
+                    <p class="text-muted">Automatically extracts and summarizes key elements from job descriptions.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-clipboard-check fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>CV-JD Matching</h4>
+                    <p class="text-muted">Uses AI to match candidate resumes with job descriptions for accurate screening.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-user-check fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>Candidate Shortlisting</h4>
+                    <p class="text-muted">Automatically shortlists candidates based on match score and defined thresholds.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-calendar-check fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>Interview Scheduling</h4>
+                    <p class="text-muted">Automatically sends interview invitations to shortlisted candidates.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-upload fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>Bulk Resume Upload</h4>
+                    <p class="text-muted">Process multiple resumes at once for efficient candidate screening.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="rounded-circle bg-light p-3 d-inline-block mb-3">
+                        <i class="fas fa-chart-bar fa-2x" style="color: var(--primary-color);"></i>
+                    </div>
+                    <h4>Dashboard Analytics</h4>
+                    <p class="text-muted">Visualize recruitment metrics and track the screening process.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-3 mb-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4" style="color: var(--primary-color);">Why Choose Our Platform?</h2>
+            <p class="lead">Our AI-powered job screening platform helps recruiters save time and resources by automating the resume screening process while ensuring the best candidates are shortlisted.</p>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg mt-3">Get Started Today</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

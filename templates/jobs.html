@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs - Job Screening App{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 col-md-3 px-0">
+            <div class="sidebar py-3">
+                <div class="text-center mb-4">
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.username }}&background=6f42c1&color=fff&size=128" alt="Profile" class="rounded-circle" width="80">
+                    <h6 class="mt-2">{{ current_user.username }}</h6>
+                </div>
+                
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('jobs') }}" class="sidebar-link active">
+                    <i class="fas fa-briefcase me-2"></i> Jobs
+                </a>
+                <a href="{{ url_for('candidates') }}" class="sidebar-link">
+                    <i class="fas fa-users me-2"></i> Candidates
+                </a>
+                <a href="{{ url_for('interviews') }}" class="sidebar-link">
+                    <i class="fas fa-calendar-alt me-2"></i> Interviews
+                </a>
+                <a href="{{ url_for('upload_resume') }}" class="sidebar-link">
+                    <i class="fas fa-file-upload me-2"></i> Upload Resume
+                </a>
+                <a href="{{ url_for('upload_multiple') }}" class="sidebar-link">
+                    <i class="fas fa-upload me-2"></i> Bulk Upload
+                </a>
+                <a href="{{ url_for('import_jobs') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Import Jobs
+                </a>
+                <a href="{{ url_for('settings') }}" class="sidebar-link">
+                    <i class="fas fa-cog me-2"></i> Settings
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10 col-md-9 ms-auto">
+            <div class="container-fluid mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Jobs</h3>
+                    <a href="{{ url_for('add_job') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Add New Job
+                    </a>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search jobs..." id="jobSearch">
+                                    <button class="btn btn-primary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="jobSort">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="az">A-Z</option>
+                                    <option value="za">Z-A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Jobs List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">All Jobs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="jobsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Added On</th>
+                                        <th>Candidates</th>
+                                        <th>Shortlisted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in jobs %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('view_job', job_id=job.id) }}" class="text-decoration-none" style="color: var(--primary-color);">
+                                                {{ job.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ job.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <span class="badge rounded-pill bg-primary">{{ job.candidates|length }}</span>
+                                        </td>
+                                        <td>
+                                            {% set shortlisted = job.candidates|selectattr('is_shortlisted', 'eq', true)|list|length %}
+                                            <span class="badge rounded-pill bg-success">{{ shortlisted }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('upload_resume') }}?job_id={{ job.id }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-file-upload"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <p class="my-3">No jobs added yet</p>
+                                            <a href="{{ url_for('add_job') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus-circle me-2"></i>Add Job
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Import Jobs -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Import Jobs</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Import jobs from a CSV file to quickly add multiple job descriptions.</p>
+                        <a href="{{ url_for('import_jobs') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>Import Jobs from CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const jobSearch = document.getElementById('jobSearch');
+        const jobsTable = document.getElementById('jobsTable');
+        const rows = jobsTable.querySelectorAll('tbody tr');
+        
+        jobSearch.addEventListener('keyup', function() {
+            const searchText = jobSearch.value.toLowerCase();
+            
+            rows.forEach(row => {
+                const jobTitle = row.querySelector('td:first-child')?.textContent.toLowerCase() || '';
+                
+                if (jobTitle.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Sort functionality
+        const jobSort = document.getElementById('jobSort');
+        
+        jobSort.addEventListener('change', function() {
+            const sortOption = jobSort.value;
+            const tbody = jobsTable.querySelector('tbody');
+            const rowsArray = Array.from(rows);
+            
+            // Sort rows
+            rowsArray.sort((a, b) => {
+                const titleA = a.querySelector('td:first-child')?.textContent.toLowerCase() || '';
+                const titleB = b.querySelector('td:first-child')?.textContent.toLowerCase() || '';
+                const dateA = a.querySelector('td:nth-child(2)')?.textContent || '';
+                const dateB = b.querySelector('td:nth-child(2)')?.textContent || '';
+                
+                switch (sortOption) {
+                    case 'newest':
+                        return dateB.localeCompare(dateA);
+                    case 'oldest':
+                        return dateA.localeCompare(dateB);
+                    case 'az':
+                        return titleA.localeCompare(titleB);
+                    case 'za':
+                        return titleB.localeCompare(titleA);
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Reappend sorted rows
+            rowsArray.forEach(row => {
+                tbody.appendChild(row);
+            });
+        });
+    });
+</script>
+{% endblock %} 
